@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- Primary Meta Tags -->
+<title>🇵🇹 Poland | Seat Calculator</title>
+<meta name="title" content="🇵🇱 Portugal | Seat Calculator">
+<meta name="description" content="">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nowcast-eu.github.io/Portugal/calculator.html">
+<meta property="og:title" content="🇵🇹 Portugal | Seat Calculator">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://nowcast-eu.github.io/Portugal/thumbnail.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:url" content="https://nowcast-eu.github.io/Portugal/calculator.html">
+<meta name="twitter:title" content="🇵🇹 Portugal | Seat Calculator">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://nowcast-eu.github.io/Portugal/thumbnail.png">
+
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Portugal/PT_favicon.png">
+
+<style>
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #fff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0 24px 24px 24px;
+  }
+
+  /* Narrower padding on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding: 0 8px 24px 8px;
+    }
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin: 28px 0 12px 0;
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 12px; 
+    table-layout: fixed; 
+  }
+
+  th, td { 
+    padding: 4px 6px; 
+    border: 1px solid #e2e8f0; 
+    text-align: left; 
+    word-wrap: break-word; 
+  }
+
+  th { background: #f1f5f9; font-weight: 600; }
+  td.party-column { font-weight: bold; position: relative; padding-left: 14px; color: black; }
+  td.party-column::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; border-radius: 2px 0 0 2px; background-color: var(--party-color); }
+  td.ge2024-column { font-style: italic; color: #999999; }
+  td.seats-column, td.diff-column { font-weight: bold; text-align: center; }
+  .diff-column.positive { color: #008500; }
+  .diff-column.negative { color: #bb0000; }
+  .diff-column.equal { color: #555555; }
+
+  .input-wrapper { display: flex; align-items: center; justify-content: flex-start; }
+  .input-wrapper input {
+    width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;
+    text-align: left; margin-right: 4px; transition: border-color 0.3s ease;
+  }
+  .percent-sign { font-size: 14px; }
+
+  /* --- BUTTONS --- */
+  .button-container { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 14px; 
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  button#calculate, button#reset {
+    background: #008500; 
+    color: #fff; 
+    border: none; 
+    border-radius: 6px;
+    padding: 8px 14px; 
+    cursor: pointer; 
+    transition: background 0.3s ease;
+  }
+
+  /* Calculate = 80%, Reset = 20% */
+  button#calculate { flex: 0 0 78%; }
+  button#reset { flex: 0 0 20%; }
+
+  tfoot td { font-weight: bold; text-align: center; background: #f1f5f9; }
+  tfoot td:first-child { text-align: left; padding-left: 14px; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* Coalition builder */
+  #coalition-builder { margin-top: 48px; }
+  .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  h3 { margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px; background: #f3f3f3;
+    transition: all 0.25s ease; opacity: 0.6; font-weight: normal;
+  }
+  .legend-item:hover { transform: translateY(-1px); }
+  .legend-item.active { opacity: 1; background: #ffffff; border-color: #999; box-shadow: 0 1px 3px rgba(0,0,0,0.15); font-weight: bold; }
+  .legend-box { width: 20px; height: 20px; border-radius: 4px; }
+  .bar-container { position: relative; height: 117px; background: #f0f0f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; width: 100%; }
+  .coalition-overlay { position: absolute; top: 0; left: 0; height: 100%; width: 0%; border-top-left-radius: 10px; border-bottom-left-radius: 10px; display: flex; overflow: hidden; transition: width 1s ease; }
+  .segment { height: 100%; flex-shrink: 0; border-radius: 0; }
+  .majority-line {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: repeating-linear-gradient(to bottom,#333,#333 5px,transparent 5px,transparent 10px);
+    left: 50%;
+  }
+  .counter { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+  .note { font-size: 13px; color: #555; text-align: center; }
+
+  /* --- MOBILE VIEW --- */
+  @media (max-width: 768px) {
+    table, th, td { font-size: 13px; }
+    .counter { font-size: 18px; }
+    h3 { font-size: 16px; }
+    .legend-item { font-size: 12px; padding: 5px 8px; }
+    .input-wrapper input { width: 45px; }
+
+    /* 👇 manually control column widths on mobile */
+    table th:nth-child(1), table td:nth-child(1) { width: 20%; } /* Party */
+    table th:nth-child(2), table td:nth-child(2) { width: 15%; } /* 2023 */
+    table th:nth-child(3), table td:nth-child(3) { width: 25%; } /* Votes */
+    table th:nth-child(4), table td:nth-child(4) { width: 20%; } /* Seats */
+    table th:nth-child(5), table td:nth-child(5) { width: 20%; } /* +/- */
+  }
+
+  @media (max-width: 480px) {
+    table, th, td { font-size: 12px; }
+    .input-wrapper input { width: 40px; }
+  }
+/* --- Uniform table header height + centered header text --- */
+th {
+  height: 30px;           /* 👈 match td height for visual consistency */
+  font-weight: 650;
+  text-align: center;     /* 👈 header text centered only */
+  vertical-align: middle; /* 👈 keep it perfectly aligned vertically */
+}
+
+td {
+  height: 30px;           /* 👈 match th height */
+  vertical-align: middle; /* 👈 ensures text sits evenly across rows */
+}
+/* --- Make the Totals row shorter --- */
+tfoot td {
+  height: 20px;             /* roughly 2/3 of 36px */
+  vertical-align: middle;
+}
+
+
+/* --- Responsive rectangular tab switcher --- */
+/* --- Final rectangular tab switcher --- */
+.tab-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f4f4;
+  border-radius: 12px;
+  padding: 3px;
+  border: 1px solid #d0d0d0;
+  overflow: hidden;
+  width: 140px;             /* base width desktop */
+  max-width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  -webkit-user-select: none; /* 👈 prevent highlight */
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #111;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.25s ease, font-weight 0.25s ease;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* 👈 remove blue tap flash */
+}
+
+.tab-btn.active {
+  font-weight: 700;
+}
+
+.tab-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tab-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  right: 50%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* --- Mobile scaling + perfect edge alignment --- */
+@media (max-width: 480px) {
+  .tab-switcher {
+    width: 120px;
+    height: 34px;
+    padding: 3px;
+  }
+  .tab-btn {
+    font-size: 13px;
+  }
+  .tab-pill {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: 50%;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<h1>Portugal | @Nowcast_EU Interactive Seat Calculator</h1>
+  
+<table>
+  <thead>
+    <tr>
+      <th>Party</th>
+      <th>2024</th>
+      <th>Votes (%)</th>
+      <th>Seats</th>
+      <th>+/- 2024</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  <tfoot>
+    <tr>
+      <td>Totals</td>
+      <td></td>
+      <td id="total-votes">0.0%</td>
+      <td id="total-seats">0</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="button-container">
+  <button id="calculate">Calculate</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div id="coalition-builder">
+<div class="header-container">
+  <h3>Coalition Builder (User Generated)</h3>
+
+  <div class="tab-switcher">
+    <div class="tab-pill" id="tab-pill"></div>
+    <button class="tab-btn active" id="tab-result">Result</button>
+    <button class="tab-btn" id="tab-2023">2023</button>
+  </div>
+</div>
+
+  <div class="legend" id="legend"></div>
+  <div class="bar-container" id="bar">
+    <div class="coalition-overlay" id="coalition-overlay"></div>
+    <div class="majority-line" title="Majority (231 seats)"></div>
+  </div>
+  <div class="counter" id="counter">0 / 460</div>
+  <div class="note">Majority = 231 seats</div>
+</div>
+
+<script>
+const BASELINE = {"baseline_national": {"PiS": 0.175, "KO": 0.155, "PL50": 0.13, "PSL": 0.12, "Lewica": 0.11, "AWA": 0.0, "Razem": 0.1, "Konf": 0.09, "OTH": 0.04, "KKP": 0.08},
+ "constituencies": [{"name": "1 – Legnica", "PiS": 0.172033898, "KO": 0.170550489, "PL50": 0.097048611, "PSL": 0.089583333, "Lewica": 0.117635447, "AWA": 0.0, "Razem": 0.097844399, "Konf": 0.079125, "OTH": 0.050842105, "KKP": 0.070333333},                    
+ {"name": "2 – Wałbrzych", "PiS": 0.164816384, "KO": 0.187666124, "PL50": 0.109506944, "PSL": 0.101083333, "Lewica": 0.102792331, "AWA": 0.0, "Razem": 0.085574741, "Konf": 0.07525, "OTH": 0.035473684, "KKP": 0.066888889},                    
+{"name": "3 – Wrocław", "PiS": 0.131793785, "KO": 0.186504886, "PL50": 0.124041667, "PSL": 0.1145, "Lewica": 0.146731136, "AWA": 0.0, "Razem": 0.151524905, "Konf": 0.08725, "OTH": 0.045578947, "KKP": 0.077555556}, 
+{"name": "4 – Bydgoszcz", "PiS": 0.150529661, "KO": 0.176760586, "PL50": 0.135958333, "PSL": 0.1255, "Lewica": 0.127634971, "AWA": 0.0, "Razem": 0.105562597, "Konf": 0.08025, "OTH": 0.033052632, "KKP": 0.071333333}, 
+{"name": "5 – Toruń", "PiS": 0.168375706, "KO": 0.149042345, "PL50": 0.141555556, "PSL": 0.130666667, "Lewica": 0.139063904, "AWA": 0.0, "Razem": 0.113266393, "Konf": 0.079625, "OTH": 0.032736842, "KKP": 0.070777778}, 
+{"name": "6 – Lublin", "PiS": 0.224830508, "KO": 0.102592834, "PL50": 0.143270833, "PSL": 0.13225, "Lewica": 0.075185868, "AWA": 0.0, "Razem": 0.078668228, "Konf": 0.10475, "OTH": 0.044736842, "KKP": 0.093111111}, 
+{"name": "7 – Chełm", "PiS": 0.250882768, "KO": 0.087850163, "PL50": 0.117722222, "PSL": 0.108666667, "Lewica": 0.071171162, "AWA": 0.0, "Razem": 0.06308123, "Konf": 0.097375, "OTH": 0.056736842, "KKP": 0.086555556}, 
+{"name": "8 – Zielona Góra", "PiS": 0.137231638, "KO": 0.190493485, "PL50": 0.136048611, "PSL": 0.125583333, "Lewica": 0.115543373, "AWA": 0.0, "Razem": 0.098864553, "Konf": 0.081375, "OTH": 0.038421053, "KKP": 0.072333333}, 
+{"name": "9 – Łódź", "PiS": 0.132584746, "KO": 0.207356678, "PL50": 0.107340278, "PSL": 0.099083333, "Lewica": 0.159214017, "AWA": 0.0, "Razem": 0.140778706, "Konf": 0.069625, "OTH": 0.025578947, "KKP": 0.061888889}, 
+{"name": "10 – Piotrków Trybunalski", "PiS": 0.230367232, "KO": 0.109509772, "PL50": 0.123951389, "PSL": 0.114416667, "Lewica": 0.084585458, "AWA": 0.0, "Razem": 0.076190152, "Konf": 0.09525, "OTH": 0.041894737, "KKP": 0.084666667},                     
+{"name": "11 – Sieradz", "PiS": 0.204957627, "KO": 0.130714984, "PL50": 0.130902778, "PSL": 0.120833333, "Lewica": 0.102837047, "AWA": 0.0, "Razem": 0.088003758, "Konf": 0.08525, "OTH": 0.037789474, "KKP": 0.075777778}, 
+{"name": "12 – Kraków I", "PiS": 0.211878531, "KO": 0.122384365, "PL50": 0.135145833, "PSL": 0.12475, "Lewica": 0.078725841, "AWA": 0.0, "Razem": 0.079185256, "Konf": 0.0985, "OTH": 0.042105263, "KKP": 0.087555556}, 
+{"name": "13 – Kraków II", "PiS": 0.151666667, "KO": 0.155151466, "PL50": 0.152208333, "PSL": 0.1405, "Lewica": 0.141819683, "AWA": 0.0, "Razem": 0.159393345, "Konf": 0.096375, "OTH": 0.031368421, "KKP": 0.085666667}, 
+{"name": "14 – Nowy Sącz", "PiS": 0.265614407, "KO": 0.081286645, "PL50": 0.104541667, "PSL": 0.0965, "Lewica": 0.041877269, "AWA": 0.0, "Razem": 0.049533629, "Konf": 0.109125, "OTH": 0.070210526, "KKP": 0.097}, 
+{"name": "15 – Tarnów", "PiS": 0.240600282, "KO": 0.085931596, "PL50": 0.168277778, "PSL": 0.155333333, "Lewica": 0.055187991, "AWA": 0.0, "Razem": 0.065275242, "Konf": 0.099875, "OTH": 0.038736842, "KKP": 0.088777778}, 
+{"name": "16 – Płock", "PiS": 0.21805791, "KO": 0.113094463, "PL50": 0.154104167, "PSL": 0.14225, "Lewica": 0.086038763, "AWA": 0.0, "Razem": 0.074370255, "Konf": 0.0815, "OTH": 0.035578947, "KKP": 0.072444444}, 
+{"name": "17 – Radom", "PiS": 0.240649718, "KO": 0.105824104, "PL50": 0.126208333, "PSL": 0.1165, "Lewica": 0.075317986, "AWA": 0.0, "Razem": 0.073814891, "Konf": 0.091375, "OTH": 0.039368421, "KKP": 0.081222222}, 
+{"name": "18 – Siedlce", "PiS": 0.240353107, "KO": 0.094464169, "PL50": 0.140020833, "PSL": 0.12925, "Lewica": 0.065091144, "AWA": 0.0, "Razem": 0.064113314, "Konf": 0.102625, "OTH": 0.043263158, "KKP": 0.091222222}, 
+{"name": "19 – Warsaw I", "PiS": 0.099562147, "KO": 0.218262215, "PL50": 0.119618056, "PSL": 0.110416667, "Lewica": 0.180314213, "AWA": 0.0, "Razem": 0.172383327, "Konf": 0.078, "OTH": 0.028315789, "KKP": 0.069333333}, 
+{"name": "20 – Warsaw II", "PiS": 0.15690678, "KO": 0.177871336, "PL50": 0.135958333, "PSL": 0.1255, "Lewica": 0.098212987, "AWA": 0.0, "Razem": 0.095142985, "Konf": 0.08825, "OTH": 0.040631579, "KKP": 0.078444444},                    
+{"name": "21 – Opole", "PiS": 0.154533898, "KO": 0.169591205, "PL50": 0.115013889, "PSL": 0.106166667, "Lewica": 0.093942105, "AWA": 0.0, "Razem": 0.087394635, "Konf": 0.081125, "OTH": 0.091368421, "KKP": 0.072111111}, 
+{"name": "22 – Krosno", "PiS": 0.270409605, "KO": 0.08002443, "PL50": 0.124493056, "PSL": 0.114916667, "Lewica": 0.05743997, "AWA": 0.0, "Razem": 0.054877637, "Konf": 0.10775, "OTH": 0.027052632, "KKP": 0.095777778}, 
+{"name": "23 – Rzeszów", "PiS": 0.255084746, "KO": 0.089364821, "PL50": 0.112125, "PSL": 0.1035, "Lewica": 0.062484287, "AWA": 0.0, "Razem": 0.065885816, "Konf": 0.1185, "OTH": 0.041368421, "KKP": 0.105333333}, 
+{"name": "24 – Białystok", "PiS": 0.209555085, "KO": 0.105218241, "PL50": 0.170263889, "PSL": 0.157166667, "Lewica": 0.066561293, "AWA": 0.0, "Razem": 0.068427361, "Konf": 0.122375, "OTH": 0.034421053, "KKP": 0.108777778}, 
+{"name": "25 – Gdańsk", "PiS": 0.124576271, "KO": 0.210537459, "PL50": 0.132708333, "PSL": 0.1225, "Lewica": 0.127055523, "AWA": 0.0, "Razem": 0.132600423, "Konf": 0.077875, "OTH": 0.029052632, "KKP": 0.069222222}, 
+{"name": "26 – Słupsk", "PiS": 0.144548023, "KO": 0.19140228, "PL50": 0.1226875, "PSL": 0.11325, "Lewica": 0.109515962, "AWA": 0.0, "Razem": 0.101822374, "Konf": 0.090125, "OTH": 0.039157895, "KKP": 0.080111111}, 
+{"name": "27 – Bielsko-Biała I", "PiS": 0.181475989, "KO": 0.144750814, "PL50": 0.131354167, "PSL": 0.12125, "Lewica": 0.097642427, "AWA": 0.0, "Razem": 0.091910625, "Konf": 0.098, "OTH": 0.047052632, "KKP": 0.087111111}, 
+{"name": "28 – Częstochowa", "PiS": 0.179696328, "KO": 0.146972313, "PL50": 0.132888889, "PSL": 0.122666667, "Lewica": 0.116959966, "AWA": 0.0, "Razem": 0.101000901, "Konf": 0.082, "OTH": 0.040315789, "KKP": 0.072888889}, 
+{"name": "29 – Katowice I", "PiS": 0.149096045, "KO": 0.182061889, "PL50": 0.120430556, "PSL": 0.111166667, "Lewica": 0.118989226, "AWA": 0.0, "Razem": 0.111628861, "Konf": 0.086875, "OTH": 0.045052632, "KKP": 0.077222222}, 
+{"name": "30 – Bielsko-Biała II", "PiS": 0.188149718, "KO": 0.151364821, "PL50": 0.112395833, "PSL": 0.10375, "Lewica": 0.090401541, "AWA": 0.0, "Razem": 0.085871865, "Konf": 0.1, "OTH": 0.049157895, "KKP": 0.088888889},
+                    
+{"name": "31 – Katowice II", "PiS": 0.152655367, "KO": 0.185747557, "PL50": 0.119798611, "PSL": 0.110583333, "Lewica": 0.115130728, "AWA": 0.0, "Razem": 0.115182071, "Konf": 0.08375, "OTH": 0.041052632, "KKP": 0.074444444}, 
+{"name": "32 – Katowice III", "PiS": 0.147019774, "KO": 0.152980456, "PL50": 0.088923611, "PSL": 0.082083333, "Lewica": 0.245079896, "AWA": 0.0, "Razem": 0.180162757, "Konf": 0.071125, "OTH": 0.029684211, "KKP": 0.063222222}, 
+{"name": "33 – Kielce", "PiS": 0.232690678, "KO": 0.105672638, "PL50": 0.124583333, "PSL": 0.115, "Lewica": 0.086776523, "AWA": 0.0, "Razem": 0.076817302, "Konf": 0.081875, "OTH": 0.050631579, "KKP": 0.072777778}, 
+{"name": "34 – Elbląg", "PiS": 0.174011299, "KO": 0.160907166, "PL50": 0.139027778, "PSL": 0.128333333, "Lewica": 0.106063675, "AWA": 0.0, "Razem": 0.087230444, "Konf": 0.08175, "OTH": 0.030421053, "KKP": 0.072666667}, 
+{"name": "35 – Olsztyn", "PiS": 0.159823446, "KO": 0.166965798, "PL50": 0.1454375, "PSL": 0.13425, "Lewica": 0.107742744, "AWA": 0.0, "Razem": 0.095348937, "Konf": 0.086625, "OTH": 0.036421053, "KKP": 0.077}, 
+{"name": "36 – Kalisz", "PiS": 0.177224576, "KO": 0.145659609, "PL50": 0.145888889, "PSL": 0.134666667, "Lewica": 0.110165624, "AWA": 0.0, "Razem": 0.094682389, "Konf": 0.08725, "OTH": 0.041157895, "KKP": 0.077555556}, 
+{"name": "37 – Konin", "PiS": 0.191264124, "KO": 0.12112215, "PL50": 0.150131944, "PSL": 0.138583333, "Lewica": 0.12076544, "AWA": 0.0, "Razem": 0.09997231, "Konf": 0.087125, "OTH": 0.044631579, "KKP": 0.077444444}, 
+{"name": "38 – Piła", "PiS": 0.143905367, "KO": 0.176053746, "PL50": 0.159430556, "PSL": 0.147166667, "Lewica": 0.106070519, "AWA": 0.0, "Razem": 0.092096721, "Konf": 0.085875, "OTH": 0.038421053, "KKP": 0.076333333}, 
+{"name": "39 – Poznań", "PiS": 0.09674435, "KO": 0.222604235, "PL50": 0.149319444, "PSL": 0.137833333, "Lewica": 0.161737228, "AWA": 0.0, "Razem": 0.16780546, "Konf": 0.07375, "OTH": 0.016736842, "KKP": 0.065555556}, 
+{"name": "40 – Koszalin", "PiS": 0.155028249, "KO": 0.195340391, "PL50": 0.111493056, "PSL": 0.102916667, "Lewica": 0.11424915, "AWA": 0.0, "Razem": 0.087450052, "Konf": 0.07525, "OTH": 0.030210526, "KKP": 0.066888889}, 
+{"name": "41 – Szczecin", "PiS": 0.142323446, "KO": 0.202610749, "PL50": 0.113930556, "PSL": 0.105166667, "Lewica": 0.120915947, "AWA": 0.0, "Razem": 0.108637695, "Konf": 0.07425, "OTH": 0.032947368, "KKP": 0.066}]};
+
+const CONSTITUENCY_SEATS = {
+  "1 – Legnica": 12,
+  "2 – Wałbrzych": 8,
+  "3 – Wrocław": 14,
+  "4 – Bydgoszcz": 12,
+  "5 – Toruń": 13,
+  "6 – Lublin": 15,
+  "7 – Chełm": 12,
+  "8 – Zielona Góra": 12,
+  "9 – Łódź": 10,
+  "10 – Piotrków Trybunalski": 9,
+  "11 – Sieradz": 12,
+  "12 – Kraków I": 8,
+  "13 – Kraków II": 14,
+  "14 – Nowy Sącz": 10,
+  "15 – Tarnów": 9,
+  "16 – Płock": 10,
+  "17 – Radom": 9,
+   "18 – Siedlce": 12,
+   "19 – Warsaw I": 20,
+   "20 – Warsaw II": 12,
+   "21 – Opole": 12,
+   "22 – Krosno": 11,
+   "23 – Rzeszów": 15,
+   "24 – Białystok": 14,
+   "25 – Gdańsk": 12,
+   "26 – Słupsk": 14,
+   "27 – Bielsko-Biała I": 9,
+   "28 – Częstochowa": 7,
+   "29 – Katowice I": 9,
+   "30 – Bielsko-Biała II": 9,
+   "31 – Katowice II": 12,
+   "32 – Katowice III": 9,
+   "33 – Kielce": 16,
+   "34 – Elbląg": 8,
+   "35 – Olsztyn": 10,
+   "36 – Kalisz": 12,
+   "37 – Konin": 9,
+   "38 – Piła": 9,
+   "39 – Poznań": 10,
+   "40 – Koszalin": 8,
+   "41 – Szczecin": 12
+};
+
+/* ---- Party setup ---- */
+const PARTIES = ["PiS", "KO", "PL50", "PSL", "Lewica", "Razem", "Konf", "KKP"];
+const PARTY_COLORS = {"PiS":"#2241B5","KO":"#FF6611","PL50":"#FFD700","PSL":"#3DB53A","Lewica":"#C00000","Razem":"#CC00CC","Konf":"#000000","KKP":"#A75325"};
+const GE2024 = {"PiS":35.4,"KO":30.7,"PL50":7.2,"PSL":5.5,"Lewica":5.6,"Razem":2.1,"Konf":6.3,"KKP":0.9};
+const DEFAULTS = {"PiS":28.5,"KO":32.9,"PL50":2.0,"PSL":3.4,"Lewica":6.2,"Razem":3.8,"Konf":14.1,"KKP":7.0};
+const PREV_2023 = {"PiS":194,"KO":157,"PL50":33,"PSL":28,"Lewica":19,"Razem":7,"Konf":16,"KKP":2};
+
+const parties = PARTIES.map(name => ({
+  name,
+  color: PARTY_COLORS[name] || "#999",
+  ge2024: GE2024[name],
+  votes: DEFAULTS[name],
+  final: 0
+}));
+
+/* ---- Render table ---- */
+function renderTable(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=parties.map((p,i)=>`
+    <tr>
+      <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
+      <td class="ge2024-column">${p.ge2024.toFixed(1)}%</td>
+      <td>
+        <div class="input-wrapper">
+          <input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">
+          <span class="percent-sign">%</span>
+        </div>
+      </td>
+      <td class="seats-column" id="seats-${i}">—</td>
+      <td class="diff-column" id="diff-${i}">—</td>
+    </tr>`).join('');
+
+  const inputs=document.querySelectorAll('.input-wrapper input');
+  inputs.forEach((input,index)=>{
+    let originalValue = input.value;
+
+    input.addEventListener('focus',()=>{
+      originalValue = input.value;
+      input.value='';
+    });
+    input.addEventListener('blur',()=>{
+      if(input.value==='') input.value = originalValue;
+    });
+
+    input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();if(inputs[index+1])inputs[index+1].focus();}
+    });
+    input.addEventListener('input',()=>{
+      updateVoteTotal();
+      document.getElementById('calculate').style.background='#ffa500';
+    });
+  });
+  updateVoteTotal();
+}
+
+function updateVoteTotal(){
+  let sum=0;
+  parties.forEach((p,i)=>{
+    sum+=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+  });
+  document.getElementById('total-votes').textContent=sum.toFixed(1)+'%';
+}
+
+/* ---- Proportional swing ---- */
+function computeConstituencyShares(){
+  const target={};
+  PARTIES.forEach((n,i)=>target[n]=(parseFloat(document.getElementById(`votes-${i}`).value)||0)/100);
+  const base=BASELINE.baseline_national;const eps=1e-9;
+  return BASELINE.constituencies.map(row=>{
+    const out={name:row.name};let sum=0;
+    PARTIES.forEach(p=>{
+      const baseNat=base[p]??0;
+      const targetNat=target[p]??baseNat;
+      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
+      const val=(row[p]??0)*ratio;
+      out[p]=val;sum+=val;
+    });
+    if(sum>0)PARTIES.forEach(p=>out[p]=out[p]/sum);
+    return out;
+  });
+}
+
+/* ---- D’Hondt ---- */
+function dhondtSeats(votes,seats=6,nationalVotes,validParties){
+  const alloc=Object.fromEntries(validParties.map(p=>[p,0]));
+  for(let s=0;s<seats;s++){
+    const quotients=validParties.map(p=>({p,q:(votes[p]||0)/(alloc[p]+1)}));
+    let best=quotients[0];
+    for(let i=1;i<quotients.length;i++){
+      const x=quotients[i];
+      if(x.q>best.q||(Math.abs(x.q-best.q)<1e-12&&(nationalVotes[x.p]||0)>(nationalVotes[best.p]||0)))best=x;
+    }
+    alloc[best.p]+=1;
+  }
+  return alloc;
+}
+
+/* ---- Calculate ---- */
+function calculate(){
+  const nationalVotes={};
+  parties.forEach((p,i)=>{
+    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+    nationalVotes[p.name]=p.votes;
+  });
+
+  // --- 5% threshold ---
+  const validParties=PARTIES.filter(p=>nationalVotes[p]>=5);
+  const excluded=PARTIES.filter(p=>nationalVotes[p]<5);
+
+  const perConst=computeConstituencyShares();
+  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+
+  perConst.forEach(row=>{
+    const s=dhondtSeats(row,CONSTITUENCY_SEATS[row.name]||6,nationalVotes,validParties);
+    PARTIES.forEach(p=>totals[p]+=(s[p]||0));
+  });
+
+  excluded.forEach(p=>totals[p]=0);
+
+  PARTIES.forEach((n,i)=>{
+    const seats=totals[n];
+    document.getElementById(`seats-${i}`).textContent=seats;
+    parties[i].final=seats;
+
+    const diff=seats-(PREV_2023[n]||0);
+    const diffCell=document.getElementById(`diff-${i}`);
+    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
+    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
+    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
+  });
+
+  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById('calculate').style.background='#008500';
+  updateCoalitionFromTotals(totals);
+}
+
+/* ---- Reset ---- */
+document.getElementById('reset').addEventListener('click',()=>{
+  parties.forEach((p,i)=>document.getElementById(`votes-${i}`).value=DEFAULTS[p.name].toFixed(1));
+  calculate();
+});
+document.getElementById('calculate').addEventListener('click',calculate);
+renderTable();
+document.addEventListener('DOMContentLoaded',()=>calculate());
+
+/* ---- Coalition Builder ---- */
+const COAL_TOTAL=460,COAL_MAJ=231;
+let selected=[];
+const legend=document.getElementById("legend"),overlay=document.getElementById("coalition-overlay"),counter=document.getElementById("counter");
+
+function toggleParty(n){
+  if(selected.includes(n))selected=selected.filter(x=>x!==n);
+  else selected.push(n);
+  renderCoalition(lastTotalsCache);
+}
+
+let lastTotalsCache=null;
+function updateCoalitionFromTotals(t){lastTotalsCache=t;renderCoalition(t);}
+
+function renderCoalition(t){
+  if(!t)return;
+  overlay.innerHTML="";legend.innerHTML="";
+  PARTIES.forEach(n=>{
+    const s=t[n]||0;
+    const item=document.createElement('div');
+    item.className='legend-item'+(selected.includes(n)?' active':'');
+    item.innerHTML=`<div class="legend-box" style="background:${PARTY_COLORS[n]||'#999'}"></div> <strong>${n}</strong> ${s}`;
+    item.onclick=()=>toggleParty(n);
+    legend.appendChild(item);
+  });
+
+  const totalSel=selected.reduce((s,n)=>s+(t[n]||0),0);
+  const width=(totalSel/COAL_TOTAL)*100;
+  overlay.style.width="0%";
+  overlay.innerHTML="";
+  if(totalSel>0){
+    selected.forEach(n=>{
+      const s=t[n]||0;
+      const seg=document.createElement('div');
+      seg.className='segment';
+      seg.style.flexBasis=((s/totalSel)*100)+'%';
+      seg.style.background=PARTY_COLORS[n]||"#999";
+      overlay.appendChild(seg);
+    });
+  }
+  requestAnimationFrame(()=>overlay.style.width=width+"%");
+  counter.textContent=`${totalSel} / ${COAL_TOTAL}`;
+  counter.style.color=totalSel>=COAL_MAJ?"#2BA84A":"#000";
+  document.querySelectorAll(".legend-item").forEach(el=>{
+    const n=el.querySelector("strong").textContent;
+    el.classList.toggle("active",selected.includes(n));
+  });
+}
+/* ---- Tab Switching (fixed state handling) ---- */
+const tabResult = document.getElementById("tab-result");
+const tab2023 = document.getElementById("tab-2023");
+let is2023View = false;
+let lastUserTotals = null; // store the most recent calculated result
+
+// --- patch: remember user totals whenever calculator runs ---
+const originalUpdateCoalitionFromTotals = updateCoalitionFromTotals;
+updateCoalitionFromTotals = function(t) {
+  if (!is2023View) lastUserTotals = t; // only store when user-generated
+  originalUpdateCoalitionFromTotals(t);
+};
+
+tabResult.addEventListener("click", () => {
+  if (!tabResult.classList.contains("active")) {
+    tabResult.classList.add("active");
+    tab2023.classList.remove("active");
+    is2023View = false;
+    document.getElementById("tab-pill").style.transform = "translateX(0%)";
+    updateCoalitionFromTotals(lastUserTotals || lastTotalsCache);
+  }
+});
+
+tab2023.addEventListener("click", () => {
+  if (!tab2023.classList.contains("active")) {
+    tab2023.classList.add("active");
+    tabResult.classList.remove("active");
+    is2023View = true;
+    document.getElementById("tab-pill").style.transform = "translateX(100%)";
+    originalUpdateCoalitionFromTotals(PREV_2023);
+  }
+});
+
+
+
+</script>
+</body>
+</html>
