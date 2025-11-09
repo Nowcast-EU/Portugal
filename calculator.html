@@ -462,8 +462,8 @@ function calculate(){
   });
 
   // --- 5% threshold ---
-  const validParties=PARTIES.filter(p=>nationalVotes[p]>=5);
-  const excluded=PARTIES.filter(p=>nationalVotes[p]<5);
+  const validParties = PARTIES; // everyone included
+  const excluded = [];
 
   const perConst=computeConstituencyShares();
   const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
